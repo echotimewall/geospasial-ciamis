@@ -60,7 +60,7 @@
               <li class="dropdown"><a href="#"><span>Non Spatial</span> <i class="bi bi-chevron-down"></i></a>
                 <ul>
                   <li><a href="table.php">Jembatan</a></li>
-                  <li><a href="air.php">Air Minum</a></li>
+                  <!--<li><a href="air.php">Air Minum</a></li>-->
                 </ul>
               </li>
             </ul>
@@ -70,6 +70,10 @@
         </ul>
         <i class="bi bi-list mobile-nav-toggle"></i>
       </nav><!-- .navbar -->
+      <nav>
+          <a href="admin" class="btn btn-danger"><i class="bi bi-door-open"></i>&nbsp;Login&nbsp;</a>
+      </nav>
+
     </div>
   </header><!-- End Header -->
 
@@ -90,37 +94,53 @@
       <div class="container">
 
         <div class="section-title">
-          <h3>Rekap data berdasarkan <span>JENIS</span></h3>
+          <h3>Rekap data hasil <span>Survey</span></h3>
         </div>
 
         <div class="row">
 
-          <div class="col-lg-2 col-md-6">
-          </div>
-
-          <div class="col-lg-4 col-md-6">
+          <div class="col-lg-3 col-md-6">
             <div class="box recommended">
-              <span class="recommended-badge">Jenis Data</span>
-              <h3>Spasial</h3>
-              <h4>0<span> Data</span></h4>
+              <span class="recommended-badge">D.I Nanggela</span>
+              <h3>Saluran Irigasi</h3>
+              <h4>20.963,30<span> meter</span></h4>
               <div class="btn-wrap">
-                <a href="#" class="btn-buy">Detail</a>
+                <a href="detail_saluran.php?id=D.I Nanggela" class="btn-buy">Detail</a>
               </div>
             </div>
           </div>
 
-          <div class="col-lg-4 col-md-6 mt-4 mt-md-0">
+          <div class="col-lg-3 col-md-6 mt-4 mt-md-0">
             <div class="box recommended">
-              <span class="recommended-badge">Jenis Data</span>
-              <h3>Non Spasial</h3>
-              <h4>19<span> Data</span></h4>
+              <span class="recommended-badge">D.I Danasari Kiri</span>
+              <h3>Saluran Irigasi</h3>
+              <h4>15.889,98<span> meter</span></h4>
               <div class="btn-wrap">
-                <a href="#" class="btn-buy">Detail</a>
+                <a href="detail_saluran.php?id=D.I Danasera Kiri" class="btn-buy">Detail</a>
               </div>
             </div>
           </div>
 
-          <div class="col-lg-2 col-md-6">
+          <div class="col-lg-3 col-md-6">
+            <div class="box recommended">
+              <span class="recommended-badge">D.I Nanggela</span>
+              <h3>Bangunan Pelengkap</h3>
+              <h4>209<span> unit</span></h4>
+              <div class="btn-wrap">
+                <a href="detail_bgn.php?id=D.I Nanggela" class="btn-buy">Detail</a>
+              </div>
+            </div>
+          </div>
+
+          <div class="col-lg-3 col-md-6">
+            <div class="box recommended">
+              <span class="recommended-badge">D.I Danasari Kiri</span>
+              <h3>Bangunan Pelengkap</h3>
+              <h4>177<span> unit</span></h4>
+              <div class="btn-wrap">
+                <a href="detail_bgn.php?id=D.I Danasari Kiri" class="btn-buy">Detail</a>
+              </div>
+            </div>
           </div>
 
         </div>
