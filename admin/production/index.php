@@ -1,3 +1,55 @@
+<?php
+    session_start();
+
+    if (empty($_SESSION['admin'])) {
+      header('Location: /index.php');
+      exit();
+    }
+    
+    $iri_nanggela = '20.963,30';
+    $iri_dankir = '15.889,98';
+    $bgn_nanggela = '209';
+    $bgn_dankir = '177';
+
+    $primer_nanggela = '7.354,10';
+    $primer_dankir = '8.258,39';
+    $sekunder_nanggela = '13.609,20';
+    $sekunder_dankir = '7.631,59';
+
+    $sbeton_nanggela = '4.852,24';
+    $sbatu_nanggela = '4.729,29';
+    $stanah_nanggela = '11.381,77';
+
+    $sbeton_dankir = '2.983,68';
+    $sbatu_dankir = '4.901,55';
+    $stanah_dankir = '8.004,75';
+
+    $sbaik_nanggela = '5.957,70';
+    $ssedang_nanggela = '12.960,11';
+    $sburuk_nanggela = '2.045,49';
+
+    $sbaik_dankir = '2.441,99';
+    $ssedang_dankir = '9.407,29';
+    $sburuk_dankir = '4.040,70';
+
+    $beton_nanggela = '33';
+    $batu_nanggela = '172';
+    $tanah_nanggela = '2';
+    $bata_nanggela = '2';
+
+    $beton_dankir = '92';
+    $batu_dankir = '63';
+    $tanah_dankir = '21';
+    $bata_dankir = '1';
+
+    $baik_nanggela = '107';
+    $sedang_nanggela = '80';
+    $buruk_nanggela = '22';
+
+    $baik_dankir = '30';
+    $sedang_dankir = '63';
+    $buruk_dankir = '84';
+?>
 <!DOCTYPE html>
 <html lang="en">
   <head>
@@ -6,7 +58,7 @@
     <meta charset="utf-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-	  <link rel="icon" href="images/ciamis.png" type="image/ico" />
+    <link rel="icon" href="images/ciamis.png" type="image/ico" />
 
     <title>Dashboard | Database Pembangunan Wilayah Kabupaten Ciamis</title>
 
@@ -16,13 +68,6 @@
     <link href="../vendors/font-awesome/css/font-awesome.min.css" rel="stylesheet">
     <!-- NProgress -->
     <link href="../vendors/nprogress/nprogress.css" rel="stylesheet">
-    <!-- iCheck -->
-    <link href="../vendors/iCheck/skins/flat/green.css" rel="stylesheet">
-	
-    <!-- bootstrap-progressbar -->
-    <link href="../vendors/bootstrap-progressbar/css/bootstrap-progressbar-3.3.4.min.css" rel="stylesheet">
-    <!-- JQVMap -->
-    <link href="../vendors/jqvmap/dist/jqvmap.min.css" rel="stylesheet"/>
     <!-- bootstrap-daterangepicker -->
     <link href="../vendors/bootstrap-daterangepicker/daterangepicker.css" rel="stylesheet">
 
@@ -56,22 +101,7 @@
             <br />
 
             <!-- sidebar menu -->
-            <div id="sidebar-menu" class="main_menu_side hidden-print main_menu">
-              <div class="menu_section">
-                <h3>&nbsp;</h3>
-                <ul class="nav side-menu">
-                  <li><a href="index.php"><i class="fa fa-home"></i> Dashboard </a></li>
-                  <li><a href="users.php"><i class="fa fa-user"></i> Pengguna Aplikasi </a></li>
-                  <li><a><i class="fa fa-pencil-square-o"></i> Informasi Data <span class="fa fa-chevron-down"></span></a>
-                    <ul class="nav child_menu">
-                      <li><a href="dokumen.php">Data Jembatan</a></li>
-                      <li><a href="air.php">Data Air Minum</a></li>
-                      <li><a href="pengaduan.php">Data Pengaduan</a></li>
-                    </ul>
-                  </li>
-                </ul>
-              </div>
-            </div>
+            <?php include('sidebar.php'); ?>
             <!-- /sidebar menu -->
 
             <!-- /menu footer buttons -->
@@ -178,7 +208,7 @@
               </ul>
             </nav>
           </div>
-        </div>
+        </div>        
         <!-- /top navigation -->
 
         <!-- page content -->
@@ -201,17 +231,389 @@
                 </div>
 
                 <div class="col-md-12 col-sm-12">
-                  <!--<div id="chart_plot_01" class="demo-placeholder"></div>-->    
-                  <iframe src="../../map.php" width="100%" height="450px"></iframe>
-                  
+                  <!--<iframe src="../../map.php" width="100%" height="650px"></iframe>-->        
                 </div>
-
-                <div class="clearfix"></div>
               </div>
             </div>
 
           </div>
 
+          <!--<div class="">-->
+          <div class="row">
+            <!--<div class="top_tiles">-->
+              <div class="col-lg-3 col-md-6">
+                <div class="tile-stats">
+                  <div class="icon"><i class="fa fa-code-fork"></i></div>
+                  <div class="count"><?php echo $iri_nanggela; ?> m</div>
+                  <h3>D.I Nanggela</h3>
+                  <p>Saluran Irigasi</p>
+                </div>
+              </div>
+              <div class="col-lg-3 col-md-6">
+                <div class="tile-stats">
+                  <div class="icon"><i class="fa fa-code-fork"></i></div>
+                  <div class="count"><?php echo $iri_dankir; ?> m</div>
+                  <h3>D.I Danasari Kiri</h3>
+                  <p>Saluran Irigasi</p>
+                </div>
+              </div>
+              <div class="col-lg-3 col-md-6 ">
+                <div class="tile-stats">
+                  <div class="icon"><i class="fa fa-home"></i></div>
+                  <div class="count"><?php echo $bgn_nanggela; ?> unit</div>
+                  <h3>D.I Nanggela</h3>
+                  <p>Bangunan Pelengkap</p>
+                </div>
+              </div>
+              <div class="col-lg-3 col-md-6 ">
+                <div class="tile-stats">
+                  <div class="icon"><i class="fa fa-home"></i></div>
+                  <div class="count"><?php echo $bgn_dankir; ?> unit</div>
+                  <h3>D.I Danasari Kiri</h3>
+                  <p>Bangunan Pelengkap</p>
+                </div>
+              </div>
+            <!--</div>-->
+          </div>
+
+          <div class="row">
+
+            <div class="col-md-4">
+              <div class="x_panel">
+                <div class="x_title">
+                  <h2><small>Saluran Irigasi berdasarkan</small> Fungsi</h2>
+                  <div class="clearfix"></div>
+                </div>
+                <div class="x_content">
+                  <article class="media event">
+                    <a class="pull-left date">
+                      <p class="month">No.</p>
+                      <p class="day">1</p>
+                    </a>
+                    <div class="media-body">
+                      <a class="title" href="#">Saluran Irigasi Primer D.I Nanggela</a>
+                      <p>Panjang <b><?php echo $primer_nanggela; ?></b> meter</p>
+                    </div>
+                  </article>
+                  <article class="media event">
+                    <a class="pull-left date">
+                      <p class="month">No.</p>
+                      <p class="day">2</p>
+                    </a>
+                    <div class="media-body">
+                      <a class="title" href="#">Saluran Irigasi Sekunder D.I Nanggela</a>
+                      <p>Panjang <b><?php echo $sekunder_nanggela; ?></b> meter</p>
+                    </div>
+                  </article>
+                  <article class="media event">
+                    <a class="pull-left date">
+                      <p class="month">&nbsp;</p>
+                      <p class="day">&nbsp;</p>
+                    </a>
+                    <div class="media-body">
+                      <a class="title" href="#"></a>
+                      <p></p>
+                    </div>
+                  </article>
+                  <article class="media event">
+                    <a class="pull-left date">
+                      <p class="month">No.</p>
+                      <p class="day">3</p>
+                    </a>
+                    <div class="media-body">
+                      <a class="title" href="#">Saluran Irigasi Primer D.I Danasari Kiri</a>
+                      <p>Panjang <b><?php echo $primer_dankir; ?></b> meter</p>
+                    </div>
+                  </article>
+                  <article class="media event">
+                    <a class="pull-left date">
+                      <p class="month">No.</p>
+                      <p class="day">4</p>
+                    </a>
+                    <div class="media-body">
+                      <a class="title" href="#">Saluran Irigasi Primer D.I Danasari Kiri</a>
+                      <p>Panjang <b><?php echo $sekunder_dankir; ?></b> meter</p>
+                    </div>
+                  </article>
+                  <article class="media event">
+                    <a class="pull-left date">
+                      <p class="month">&nbsp;</p>
+                      <p class="day">&nbsp;</p>
+                    </a>
+                    <div class="media-body">
+                      <a class="title" href="#"></a>
+                      <p></p>
+                    </div>
+                  </article>
+                </div>
+              </div>
+            </div>
+
+            <div class="col-md-4">
+              <div class="x_panel">
+                <div class="x_title">
+                  <h2><small>Saluran Irigasi berdasarkan </small>Konstruksi</h2>
+                  <div class="clearfix"></div>
+                </div>
+                <div class="x_content">
+                  <article class="media event">
+                    <a class="pull-left date">
+                      <p class="month">No.1</p>
+                      <p class="day">1</p>
+                    </a>
+                    <div class="media-body">
+                      <a class="title" href="#">Konstruksi Beton D.I Nanggela</a>
+                      <p>Panjang <b><?php echo $sbeton_nanggela; ?></b> meter</p>
+                    </div>
+                  </article>
+                  <article class="media event">
+                    <a class="pull-left date">
+                      <p class="month">No.</p>
+                      <p class="day">2</p>
+                    </a>
+                    <div class="media-body">
+                      <a class="title" href="#">Konstruksi Pasangan Batu Kali D.I Nanggela</a>
+                      <p>Panjang <b><?php echo $sbatu_nanggela; ?></b> meter</p>
+                    </div>
+                  </article>
+                  <article class="media event">
+                    <a class="pull-left date">
+                      <p class="month">No.</p>
+                      <p class="day">3</p>
+                    </a>
+                    <div class="media-body">
+                      <a class="title" href="#">Konstruksi Tanah D.I Nanggela</a>
+                      <p>Panjang <b><?php echo $stanah_nanggela; ?></b> meter</p>
+                    </div>
+                  </article>
+                  <article class="media event">
+                    <a class="pull-left date">
+                      <p class="month">No.</p>
+                      <p class="day">4</p>
+                    </a>
+                    <div class="media-body">
+                      <a class="title" href="#">Konstruksi Beton D.I Danasari Kiri</a>
+                      <p>Panjang <b><?php echo $sbeton_dankir; ?></b> meter</p>
+                    </div>
+                  </article>
+                  <article class="media event">
+                    <a class="pull-left date">
+                      <p class="month">No.</p>
+                      <p class="day">5</p>
+                    </a>
+                    <div class="media-body">
+                      <a class="title" href="#">Konstruksi Pasangan Batu Kali D.I Danasari Kiri</a>
+                      <p>Panjang <b><?php echo $sbatu_dankir; ?></b> meter</p>
+                    </div>
+                  </article>
+                  <article class="media event">
+                    <a class="pull-left date">
+                      <p class="month">No.</p>
+                      <p class="day">6</p>
+                    </a>
+                    <div class="media-body">
+                      <a class="title" href="#">Konstruksi Tanah D.I Danasari Kiri</a>
+                      <p>Panjang <b><?php echo $stanah_dankir; ?></b> meter</p>
+                    </div>
+                  </article>
+                </div>
+              </div>
+            </div>
+
+            <div class="col-md-4">
+              <div class="x_panel">
+                <div class="x_title">
+                  <h2><small>Saluran Irigasi berdasarkan </small>Kondisi</h2>
+                  <div class="clearfix"></div>
+                </div>
+                <div class="x_content">
+                <article class="media event">
+                    <a class="pull-left date">
+                      <p class="month">No.</p>
+                      <p class="day">1</p>
+                    </a>
+                    <div class="media-body">
+                      <a class="title" href="#">Saluran Irigasi Kondisi Baik D.I Nanggela</a>
+                      <p>Panjang <b><?php echo $sbaik_nanggela; ?></b> meter</p>
+                    </div>
+                  </article>
+                  <article class="media event">
+                    <a class="pull-left date">
+                      <p class="month">No.</p>
+                      <p class="day">2</p>
+                    </a>
+                    <div class="media-body">
+                      <a class="title" href="#">Saluran Irigasi Kondisi Sedang D.I Nanggela</a>
+                      <p>Panjang <b><?php echo $ssedang_nanggela; ?></b> meter</p>
+                    </div>
+                  </article>
+                  <article class="media event">
+                    <a class="pull-left date">
+                      <p class="month">No.</p>
+                      <p class="day">3</p>
+                    </a>
+                    <div class="media-body">
+                      <a class="title" href="#">Saluran Irigasi Kondisi Buruk D.I Nanggela</a>
+                      <p>Panjang <b><?php echo $sburuk_nanggela; ?></b> meter</p>
+                    </div>
+                  </article>
+                  <article class="media event">
+                    <a class="pull-left date">
+                      <p class="month">No.</p>
+                      <p class="day">4</p>
+                    </a>
+                    <div class="media-body">
+                      <a class="title" href="#">Saluran Irigasi Kondisi Baik D.I Danasari Kiri</a>
+                      <p>Panjang <b><?php echo $sbaik_dankir; ?></b> meter</p>
+                    </div>
+                  </article>
+                  <article class="media event">
+                    <a class="pull-left date">
+                      <p class="month">No.</p>
+                      <p class="day">5</p>
+                    </a>
+                    <div class="media-body">
+                      <a class="title" href="#">Saluran Irigasi Kondisi Sedang D.I Danasari Kiri</a>
+                      <p>Panjang <b><?php echo $ssedang_dankir; ?></b> meter</p>
+                    </div>
+                  </article>
+                  <article class="media event">
+                    <a class="pull-left date">
+                      <p class="month">No.</p>
+                      <p class="day">6</p>
+                    </a>
+                    <div class="media-body">
+                      <a class="title" href="#">Saluran Irigasi Kondisi Buruk D.I Danasari Kiri</a>
+                      <p>Panjang <b><?php echo $sburuk_dankir; ?></b> meter</p>
+                    </div>
+                  </article>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="row">
+
+            <div class="col-md-6 col-sm-12 ">
+              <div class="x_panel">
+                <div class="x_title">
+                  <h2><small>Bangunan Pelengkap berdasarkan </small>Konstruksi</h2>
+                  <div class="clearfix"></div>
+                </div>
+                <div class="x_content">
+                  <div class="dashboard-widget-content">
+                    <div class="col-md-6 hidden-small">
+                      <h2 class="line_30">D.I Nanggela</h2>
+                      <table class="countries_list">
+                        <tbody>
+                          <tr>
+                            <td>Beton</td>
+                            <td class="fs15 fw700 text-right"><?php echo $beton_nanggela; ?></td>
+                          </tr>
+                          <tr>
+                            <td>Pasangan Batu Kali</td>
+                            <td class="fs15 fw700 text-right"><?php echo $batu_nanggela; ?></td>
+                          </tr>
+                          <tr>
+                            <td>Tanah</td>
+                            <td class="fs15 fw700 text-right"><?php echo $tanah_nanggela; ?></td>
+                          </tr>
+                          <tr>
+                            <td>Pasangan Bata</td>
+                            <td class="fs15 fw700 text-right"><?php echo $bata_nanggela; ?></td>
+                          </tr>
+                        </tbody>
+                      </table>
+                    </div>
+                    <div class="col-md-6 col-sm-12 ">
+                      <h2 class="line_30">D.I Danasari Kiri</h2>
+                      <table class="countries_list">
+                        <tbody>
+                          <tr>
+                            <td>Beton</td>
+                            <td class="fs15 fw700 text-right"><?php echo $beton_dankir; ?></td>
+                          </tr>
+                          <tr>
+                            <td>Pasangan Batu Kali</td>
+                            <td class="fs15 fw700 text-right"><?php echo $batu_dankir; ?></td>
+                          </tr>
+                          <tr>
+                            <td>Tanah</td>
+                            <td class="fs15 fw700 text-right"><?php echo $tanah_dankir; ?></td>
+                          </tr>
+                          <tr>
+                            <td>Pasangan Bata</td>
+                            <td class="fs15 fw700 text-right"><?php echo $bata_dankir; ?></td>
+                          </tr>
+                        </tbody>
+                      </table>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div class="col-md-6 col-sm-12 ">
+              <div class="x_panel">
+                <div class="x_title">
+                  <h2><small>Bangunan Pelengkap berdasarkan </small>Kondisi</h2>
+                  <div class="clearfix"></div>
+                </div>
+                <div class="x_content">
+                  <div class="dashboard-widget-content">
+                    <div class="col-md-6 hidden-small">
+                      <h2 class="line_30">D.I Nanggela</h2>
+                      <table class="countries_list">
+                        <tbody>
+                          <tr>
+                            <td>Baik</td>
+                            <td class="fs15 fw700 text-right"><?php echo $baik_nanggela; ?></td>
+                          </tr>
+                          <tr>
+                            <td>Sedang</td>
+                            <td class="fs15 fw700 text-right"><?php echo $sedang_nanggela; ?></td>
+                          </tr>
+                          <tr>
+                            <td>Buruk</td>
+                            <td class="fs15 fw700 text-right"><?php echo $buruk_nanggela; ?></td>
+                          </tr>
+                          <tr>
+                            <td>&nbsp;</td>
+                            <td class="fs15 fw700 text-right">&nbsp;</td>
+                          </tr>
+                        </tbody>
+                      </table>
+                    </div>
+                    <div class="col-md-6 col-sm-12 ">
+                      <h2 class="line_30">D.I Danasari Kiri</h2>
+                      <table class="countries_list">
+                        <tbody>
+                          <tr>
+                            <td>Baik</td>
+                            <td class="fs15 fw700 text-right"><?php echo $baik_dankir; ?></td>
+                          </tr>
+                          <tr>
+                            <td>Sedang</td>
+                            <td class="fs15 fw700 text-right"><?php echo $sedang_dankir; ?></td>
+                          </tr>
+                          <tr>
+                            <td>Buruk</td>
+                            <td class="fs15 fw700 text-right"><?php echo $buruk_dankir; ?></td>
+                          </tr>
+                          <tr>
+                            <td>&nbsp;</td>
+                            <td class="fs15 fw700 text-right">&nbsp;</td>
+                          </tr>
+                        </tbody>
+                      </table>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+          </div>
+          <!--</div>-->
         </div>
         <!-- /page content -->
 
@@ -229,21 +631,15 @@
     <!-- jQuery -->
     <script src="../vendors/jquery/dist/jquery.min.js"></script>
     <!-- Bootstrap -->
-    <script src="../vendors/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+   <script src="../vendors/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
     <!-- FastClick -->
     <script src="../vendors/fastclick/lib/fastclick.js"></script>
     <!-- NProgress -->
     <script src="../vendors/nprogress/nprogress.js"></script>
     <!-- Chart.js -->
     <script src="../vendors/Chart.js/dist/Chart.min.js"></script>
-    <!-- gauge.js -->
-    <script src="../vendors/gauge.js/dist/gauge.min.js"></script>
-    <!-- bootstrap-progressbar -->
-    <script src="../vendors/bootstrap-progressbar/bootstrap-progressbar.min.js"></script>
-    <!-- iCheck -->
-    <script src="../vendors/iCheck/icheck.min.js"></script>
-    <!-- Skycons -->
-    <script src="../vendors/skycons/skycons.js"></script>
+    <!-- jQuery Sparklines -->
+    <script src="../vendors/jquery-sparkline/dist/jquery.sparkline.min.js"></script>
     <!-- Flot -->
     <script src="../vendors/Flot/jquery.flot.js"></script>
     <script src="../vendors/Flot/jquery.flot.pie.js"></script>
@@ -256,16 +652,11 @@
     <script src="../vendors/flot.curvedlines/curvedLines.js"></script>
     <!-- DateJS -->
     <script src="../vendors/DateJS/build/date.js"></script>
-    <!-- JQVMap -->
-    <script src="../vendors/jqvmap/dist/jquery.vmap.js"></script>
-    <script src="../vendors/jqvmap/dist/maps/jquery.vmap.world.js"></script>
-    <script src="../vendors/jqvmap/examples/js/jquery.vmap.sampledata.js"></script>
     <!-- bootstrap-daterangepicker -->
     <script src="../vendors/moment/min/moment.min.js"></script>
     <script src="../vendors/bootstrap-daterangepicker/daterangepicker.js"></script>
-
+    
     <!-- Custom Theme Scripts -->
     <script src="../build/js/custom.min.js"></script>
-	
   </body>
 </html>
