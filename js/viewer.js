@@ -5,6 +5,7 @@ require([
 	  "esri/request",
 	  "esri/Basemap",
       "esri/views/MapView",
+	  "esri/geometry/support/webMercatorUtils", 
 	  "esri/layers/FeatureLayer",
 	  "esri/tasks/FindTask",
       "esri/tasks/support/FindParameters",
@@ -39,6 +40,7 @@ require([
 	  "esri/widgets/AreaMeasurement2D",
 	  "esri/widgets/Editor",
 	  "esri/widgets/Locate",
+	  "esri/widgets/CoordinateConversion",
 
       // Bootstrap
       "bootstrap/Collapse",
@@ -52,9 +54,9 @@ require([
 	  "dojo/store/Memory",
 	  "dojo/query",
       "dojo/domReady!"
-    ], function(Map, WebMap, request, Basemap, MapView, FeatureLayer, FindTask, FindParameters, QueryTask, Query, SimpleRenderer, LabelClass, CSVLayer, GraphicsLayer, Graphic, 
+    ], function(Map, WebMap, request, Basemap, MapView, webMercatorUtils, FeatureLayer, FindTask, FindParameters, QueryTask, Query, SimpleRenderer, LabelClass, CSVLayer, GraphicsLayer, Graphic, 
 	VectorTileLayer, KMLLayer, MapImageLayer, GroupLayer, WFSLayer, WMSLayer, Home, Zoom, Compass, Search, Legend, BasemapToggle, BasemapGallery, 
-	ScaleBar, Attribution, LayerList, Print, Measurement, DistanceMeasurement2D, AreaMeasurement2D, Editor, Locate, Collapse, Dropdown, CalciteMaps, CalciteMapArcGISSupport, Memory, query) {
+	ScaleBar, Attribution, LayerList, Print, Measurement, DistanceMeasurement2D, AreaMeasurement2D, Editor, Locate, CoordinateConversion, Collapse, Dropdown, CalciteMaps, CalciteMapArcGISSupport, Memory, query) {
 
 		var activeWidget = null,
 			csvLayer,
@@ -62,28 +64,270 @@ require([
 			highlight;
 		//var layerList;
 
-		var renderer = {
+		//url = "http://www.kav-32.com:6080/arcgis/rest/services/geospasial_ciamis/MapServer";
+		var url = "http://157.10.157.37:8080/geoserver/geociamis/ows";
+		var imgUrl = "https://www.kav-32.com/geociamis/foto";
+		var imgIco = "http://localhost/ciamis/";
+
+		var renBgn = {
+			type: "simple",
+			symbol: {
+				type: "simple-marker",
+				style: "square",
+				color: "green",
+				size: "10px",
+				outline: {  
+					color: "#ffffff",
+					width: 1  
+				}
+			}
+		};
+
+		var renIrigasi = {
+			type: "unique-value",  
+			field: "fungsi",
+			//defaultSymbol: { type: "simple-line" }, 
+			uniqueValueInfos: [{
+			  value: "Saluran Primer",
+			  symbol: {
+				type: "simple-line",  
+				color: [40, 116, 166, 1.0],
+				width: 1.5
+			  }
+			},{
+				value: "Saluran Sekunder",
+				symbol: {
+					type: "simple-line",
+					color: [231, 76, 60, 1.0],
+					width: 1.5
+				}
+			}]
+		};
+
+		var renSal = {
+			type: "simple",
+			symbol: {
+				type: "simple-line",
+				color: [165, 105, 189],
+				width: 2
+			}
+		};
+
+		var renLahan = {
+			type: "simple",  
+			symbol: {
+			  type: "simple-fill",  
+			  color: [ 82, 211, 44, 0.8 ],
+			  style: "diagonal-cross",
+			  outline: {  
+				width: 0.5,
+				color: "#ffc100",			  
+				style: "solid"
+			  }
+			}
+		};
+
+		var ren_Rumah = {
+			type: "unique-value",  
+			field: "serah_teri",
+			//defaultSymbol: { type: "simple-line" }, 
+			uniqueValueInfos: [{
+			  	value: "BELUM",
+			  	symbol: {
+					type: "picture-marker",  // autocasts as new PictureMarkerSymbol()
+					url: imgIco + "assets/img/rumah1.png",
+					width: "20px",
+					height: "20px"
+			  	}
+			},{
+				value: "POTENSI",
+				symbol: {
+					type: "picture-marker",  // autocasts as new PictureMarkerSymbol()
+					url: imgIco + "assets/img/rumah2.png",
+					width: "20px",
+					height: "20px"
+				}
+			},{
+				value: "SUDAH",
+				symbol: {
+					type: "picture-marker",  // autocasts as new PictureMarkerSymbol()
+					url: imgIco + "assets/img/rumah3.png",
+					width: "20px",
+					height: "20px"
+				}
+			}]
+		};
+		
+		var ren_RTLH = {
+			type: "simple",
+		 	symbol: {
+				type: "picture-marker",  // autocasts as new PictureMarkerSymbol()
+				url: imgIco + "assets/img/rtlh.png",
+				width: "20px",
+				height: "20px"
+			}
+		}
+
+		var renKP2B = {
 		  type: "simple",  
 		  symbol: {
 			type: "simple-fill",  
-			color: [ 255, 128, 0, 0 ],
+			color: [ 213, 245, 227, 0.8 ],
+			//style: "diagonal-cross",
 			outline: {  
-			  width: 1.5,
+			  width: 0.5,
 			  color: "#404040",			  
-			  style: "dash"
+			  style: "solid"
 			}
 		  }
 		};
 
-		var renAir = {
+		var ren_PDAM = {
+			type: "simple",
+		 	symbol: {
+				type: "picture-marker",  // autocasts as new PictureMarkerSymbol()
+				url: imgIco + "assets/img/pdam.png",
+				width: "19px",
+				height: "16px"
+			}
+		}
+
+		var ren_Pipa = {
+			type: "simple",
+			symbol: {
+				type: "simple-line",
+				color: "#00ffff",
+				width: 1,
+				marker: { 
+					style: "square",
+					color: "#ffffff",
+					placement: "end"
+				}
+			}
+		};
+
+		var ren_kab = {
+			type: "simple",
+			symbol: {
+				type: "simple-line",
+				color: "#ffb2ff",
+				width: 1
+			}
+		};
+
+		var ren_prov = {
+			type: "simple",
+			symbol: {
+				type: "simple-line",
+				color: "#ffaa00",
+				width: 2
+			}
+		};
+
+		var ren_nas = {
+			type: "simple",
+			symbol: {
+				type: "simple-line",
+				color: "#ff5100",
+				width: 3
+			}
+		};
+
+		var renA_PDAM = {
+			type: "unique-value",  // autocasts as new UniqueValueRenderer()
+			field: "wilpelpdam",
+			//defaultSymbol: { type: "simple-fill" },  // autocasts as new SimpleFillSymbol()
+			uniqueValueInfos: [{
+			  value: "Bapamapurla",
+			  symbol: {
+				type: "simple-fill",  
+				color: [5, 13, 178, 0.5],
+				outline: {  
+					width: 1,
+					color: "#5198b5",			  
+					style: "dash"
+				}
+			  }
+			}, {
+			  value: "Ciamis",
+			  symbol: {
+				type: "simple-fill",  
+				color: [25, 250, 2, 0.5],
+				outline: {  
+					width: 1,
+					color: "#5198b5",			  
+					style: "dash"
+				}
+			  }
+			}, {
+			  value: "Cisaga",
+			  symbol: {
+				type: "simple-fill",  
+				color: [250, 2, 2, 0.5],
+				outline: {  
+					width: 1,
+					color: "#5198b5",			  
+					style: "dash"
+				}
+			  }
+			}, {
+			  value: "Kawali",
+			  symbol: {
+				type: "simple-fill",  
+				color: [247, 255, 0 , 0.5],
+				outline: {  
+					width: 1,
+					color: "#5198b5",			  
+					style: "dash"
+				}
+			  }
+			},{
+				value: "Panumbangan",
+				symbol: {
+				  type: "simple-fill",  
+				  color: [203, 67, 53, 0.5],
+				  outline: {  
+					width: 1,
+					color: "#5198b5",			  
+					style: "dash"
+				  }
+				}
+			},{
+				value: "Sindangkasih",
+				symbol: {
+				  type: "simple-fill",  
+				  color: [114, 0, 171, 0.5],
+				  outline: {  
+					width: 1,
+					color: "#5198b5",			  
+					style: "dash"
+				  }
+				}  
+			}]
+		};
+
+		var renKel = {
 			type: "simple",  
 		  	symbol: {
 				type: "simple-fill",  
-				color: [ 194, 255, 204, 0.8 ],
+				color: [ 194, 200, 200, 0 ],
 				outline: {  
-					width: 0.1,
-					color: "#404040",			  
-					style: "solit"
+					width: 0.5,
+					color: "#ffffff",			  
+					style: "solid"
+				}
+			}
+		}
+	
+		var renKec = {
+			type: "simple",  
+		  	symbol: {
+				type: "simple-fill",  
+				color: [ 194, 255, 204, 0.2 ],
+				outline: {  
+					width: 1.5,
+					color: "yellow",			  
+					style: "solid"
 				}
 			}
 		}
@@ -93,17 +337,74 @@ require([
 			  type: "text",
 			  color: "#0026FF",
 			  haloColor: "#ffffff",//"#7F92FF",
-			  haloSize: "1px",
+			  haloSize: "2px",
 			  font: {
 				size: "12px",
 				family: "Noto Sans",
-				style: "italic",
-				weight: "normal"
+				//style: "italic",
+				weight: "bold"
 			  }
 			},
 			labelPlacement: "above-center",
 			labelExpressionInfo: {
-				expression: "$feature.DESA"
+				expression: "$feature.KECAMATAN"
+			}
+		};
+
+		var lbl_rumah = {
+			symbol: {
+			  type: "text",
+			  color: "#c0392b",
+			  haloColor: "#ffffff",//"#7F92FF",
+			  haloSize: "2px",
+			  font: {
+				size: "11px",
+				family: "Noto Sans",
+				//style: "italic",
+				weight: "bold"
+			  }
+			},
+			labelPlacement: "above-center",
+			labelExpressionInfo: {
+				expression: "$feature.nama_perus"
+			}
+		};
+
+		var lbl_kel = {
+			symbol: {
+			  type: "text",
+			  color: "#000000",
+			  haloColor: "#ffffff",//"#7F92FF",
+			  haloSize: "2px",
+			  font: {
+				size: "11px",
+				family: "Noto Sans",
+				//style: "italic",
+				weight: "bold"
+			  }
+			},
+			labelPlacement: "above-center",
+			labelExpressionInfo: {
+				expression: "$feature.wilayah__2"
+			}
+		};
+
+		var lbl_bgn = {
+			symbol: {
+			  type: "text",
+			  color: "#000000",
+			  haloColor: "#ffffff",//"#7F92FF",
+			  haloSize: "2px",
+			  font: {
+				size: "11px",
+				family: "Noto Sans",
+				//style: "italic",
+				weight: "bold"
+			  }
+			},
+			labelPlacement: "above-center",
+			labelExpressionInfo: {
+				expression: "$feature.nama_bangu"
 			}
 		};
 	  
@@ -111,11 +412,131 @@ require([
 			return feature.graphic.layer.title;
 		}	  
 
-		//----------------------------------------------------------------------------------------------
-		url = "http://www.kav-32.com:6080/arcgis/rest/services/geospasial_ciamis/MapServer";
-		imgUrl = "http://www.kav-32.com/geociamis/foto";
+		var temp_bgn = {
+			title: "Bangunan Pelengkap",
+			content: [{
+				type: "fields",
+				fieldInfos: [{
+					fieldName: "NAMA_DI",
+					label: "Nama D.I"
+				},{
+					fieldName: "NAMA_BANGU",
+					label: "Nama Bangunan"
+				},{
+					fieldName: "KONTRUKSI",
+					label: "Konstruksi"
+				},{
+					fieldName: "KONDISI_FI",
+					label: "Kondisi FI"
+				},{
+					fieldName: "KECAMATAN",
+					label: "Kecamatan"
+				},{
+					fieldName: "DESA",
+					label: "Desa"
+				},{
+					fieldName: "KETERANGAN",
+					label: "Keterangan"
+				}]
+			},{
+				type: "media",
+				mediaInfos: [{
+					//caption: '{FOTO1}',
+					type: 'image',
+					value: {
+						sourceURL: imgUrl + '/Irigasi/{foto1}',
+						linkURL: imgUrl + '/Irigasi/{foto1}'
+					}
+				},{
+					type: 'image',
+					value: {
+						sourceURL: imgUrl + '/Irigasi/{foto2}',
+						linkURL: imgUrl + '/Irigasi/{foto2}'
+					}
+				},{
+					type: 'image',
+					value: {
+						sourceURL: imgUrl + '/Irigasi/{foto3}',
+						linkURL: imgUrl + '/Irigasi/{foto3}'
+					}
+				}]			
+			}]
+		}
 
-		var rumah = new MapImageLayer({
+		var temp_irigasi = {
+			title: "Saluran Irigasi Detail",
+			content: [{
+				type: "fields",
+				fieldInfos: [{
+					fieldName: "NAMA_DI",
+					label: "Nama D.I"
+				},{
+					fieldName: "NAMA_SALUR",
+					label: "Nama Saluran"
+				},{
+					fieldName: "SUMBER_AIR",
+					label: "Sumber Air"
+				},{
+					fieldName: "FUNGSI",
+					label: "Fungsi"
+				},{
+					fieldName: "KONTRUKSI",
+					label: "Konstruksi"
+				},{
+					fieldName: "KONDISI_FI",
+					label: "Kondisi FI"
+				},{
+					fieldName: "TINGGI_M",
+					label: "Tinggi (m)"
+				},{
+					fieldName: "LEBAR_M",
+					label: "Lebar (m)"
+				},{
+					fieldName: "PANJANG_M",
+					label: "Panjang (m)"
+				},{
+					fieldName: "KECAMATAN",
+					label: "Kecamatan"
+				},{
+					fieldName: "DESA",
+					label: "Desa"
+				},{
+					fieldName: "ELEVASI_1",
+					label: "Elevasi"
+				},{
+					fieldName: "SEDIMENTAS",
+					label: "Sedimentasi"
+				},{
+					fieldName: "KETERANGAN",
+					label: "Keterangan"
+				}]
+			},{
+				type: "media",
+				mediaInfos: [{
+					//caption: '{FOTO1}',
+					type: 'image',
+					value: {
+						sourceURL: imgUrl + '/Irigasi/{foto1}',
+						linkURL: imgUrl + '/Irigasi/{foto1}'
+					}
+				},{
+					type: 'image',
+					value: {
+						sourceURL: imgUrl + '/Irigasi/{foto2}',
+						linkURL: imgUrl + '/Irigasi/{foto2}'
+					}
+				},{
+					type: 'image',
+					value: {
+						sourceURL: imgUrl + '/Irigasi/{foto3}',
+						linkURL: imgUrl + '/Irigasi/{foto3}'
+					}
+				}]			
+			}]
+		}
+
+		//----------------------------------------------------------------------------------------------
+		/*var rumah = new MapImageLayer({
 			url: url,
 			visible: false,
 			title: "Sebaran Perumahan",
@@ -175,12 +596,17 @@ require([
 							fieldName: 'Longitude',
 							label: 'Longitude'
 						}]
+					}],
+					actions: [ {
+					  title: "Data Fasum Fasos",
+					  id: "edit-this",
+					  className: "esri-icon-table"
 					}]
 				}
 			}]
-		});
+		});*/
 
-		var rutilahu = new MapImageLayer({
+		/*var rutilahu = new MapImageLayer({
 			url: url,
 			visible: false,
 			outFields: "*",
@@ -230,9 +656,9 @@ require([
 					}]
 				}
 			}]
-		});
+		});*/
 
-		var pel_pdam = new MapImageLayer({
+		/*var pel_pdam = new MapImageLayer({
 			url: url,
 			visible: false,
 			title: "Pelanggan PDAM",
@@ -309,7 +735,7 @@ require([
 							fieldName: 'REMARK',
 							label: 'Keterangan'
 						},{
-							fieldName: 'STATUS',
+							fieldName: 'STATUS_JLN',
 							label: 'Status'
 						}]
 					}]
@@ -386,17 +812,290 @@ require([
 					}]
 				}
 			}]
+		});*/
+		
+		var bgn_nanggela = new WFSLayer({url,
+			name: "geociamis:nanggela_bangunan",
+			title: "Bangunan Pelengkap",
+			outFields: "*",
+			renderer: renBgn,
+			labelingInfo: lbl_bgn,
+			popupTemplate: temp_bgn
+		});
+		
+		var irigasi_nanggela = new WFSLayer({url,
+			name: "geociamis:nanggela_irigasi_detail",
+			title: "Saluran Irigasi Detail",
+			outFields: "*",
+			renderer: renIrigasi,
+			popupTemplate: temp_irigasi
+		});
+		
+		var sal_nanggela = new WFSLayer({url,
+			name: "geociamis:nanggela_saluran",
+			title: "Saluran Irigasi",
+			outFields: "*",
+			renderer: renSal
+		});
+
+		var lahan_nanggela = new WFSLayer({url,
+			name: "geociamis:nanggela_lahan",
+			title: "Lahan",
+			outFields: "*",
+			renderer: renLahan
+		});
+		
+		var nanggela = new GroupLayer({
+			title: "D.I Nanggela",
+			visible: false,
+			layers: [lahan_nanggela, sal_nanggela, irigasi_nanggela, bgn_nanggela]
+		});
+		
+		var bgn_dankir = new WFSLayer({url,
+			name: "geociamis:dankir_bangunan",
+			title: "Bangunan Pelengkap",
+			outFields: "*",
+			renderer: renBgn,
+			labelingInfo: lbl_bgn,
+			popupTemplate: temp_bgn
+		});
+		
+		var irigasi_dankir = new WFSLayer({url,
+			name: "geociamis:dankir_irigasi_detail",
+			title: "Saluran Irigasi Detail",
+			outFields: "*",
+			renderer: renIrigasi,
+			popupTemplate: temp_irigasi
+		});
+		
+		var sal_dankir = new WFSLayer({url,
+			name: "geociamis:dankir_saluran",
+			title: "Saluran Irigasi",
+			outFields: "*",
+			renderer: renSal
+		});
+
+		var lahan_dankir = new WFSLayer({url,
+			name: "geociamis:dankir_lahan",
+			title: "Lahan",
+			outFields: "*",
+			renderer: renLahan
+		});
+		
+		var dankir = new GroupLayer({
+			title: "D.I Danasari Kiri",
+			visible: false,
+			layers: [lahan_dankir, sal_dankir, irigasi_dankir, bgn_dankir]
+		});
+		
+		var rumah = new WFSLayer({url,
+			name: "geociamis:sebaran_perumahan",
+			title: "Sebaran Perumahan",
+			outFields: "*",
+			visible: false,
+			renderer: ren_Rumah,
+			labelingInfo: lbl_rumah,
+			popupTemplate: {
+				title: "Sebaran Perumahan",
+				content: [{
+					type: "fields",
+					fieldInfos: [{
+						fieldName: 'IMB',
+						label: 'IMB'
+					},{
+						fieldName: 'IZIN_LINGK',
+						label: 'Izin Lingkungan'
+					},{
+						fieldName: 'TAHUN',
+						label: 'Tahun'
+					},{
+						fieldName: 'SITE_PLAN',
+						label: 'Siteplan'
+					},{
+						fieldName: 'PERUSAHAAN',
+						label: 'Perusahaan'
+					},{
+						fieldName: 'ALAMAT',
+						label: 'Alamat'
+					},{
+						fieldName: 'PENANGGUNG',
+						label: 'Penanggung Jawab'
+					},{
+						fieldName: 'NAMA_PERUS',
+						label: 'Nama Perusahaan'
+					},{
+						fieldName: 'LOKASI',
+						label: 'Lokasi'
+					},{
+						fieldName: 'KECAMATAN',
+						label: 'Kecamatan'
+					},{
+						fieldName: 'JUMLAH_RUM',
+						label: 'Jumlah Rumah'
+					},{
+						fieldName: 'LUAS_PERUM',
+						label: 'Luas Perumahan'
+					},{
+						fieldName: 'KETERANGAN',
+						label: 'Keterangan'
+					},{
+						fieldName: 'SERAH_TERI',
+						label: 'Serah Terima'
+					},{
+						fieldName: 'Latitude',
+						label: 'Latitude'
+					},{
+						fieldName: 'Longitude',
+						label: 'Longitude'
+					}]
+				}]
+			}
+		});
+		
+		var rutilahu = new WFSLayer({url,
+			name: "geociamis:rtlh",
+			title: "RTLH",
+			outFields: "*",
+			visible: false,
+			renderer: ren_RTLH,
+			refreshInterval: 0.1,
+			popupTemplate: {
+				title: "RTLH",
+				content: [{
+					type: "fields",
+					fieldInfos: [{
+						fieldName: 'Nama',
+						label: 'Nama'
+					},{
+						fieldName: 'Alamat',
+						label: 'Alamat'
+					},{
+						fieldName: 'Desa',
+						label: 'Desa'
+					},{
+						fieldName: 'Kecamatan',
+						label: 'Kecamatan'
+					},{
+						fieldName: 'JnsKelamain',
+						label: 'Jenis Kelamin'
+					},{
+						fieldName: 'ThnPenanga',
+						label: 'Tahun Penanganan'
+					},{
+						fieldName: 'SumberDana',
+						label: 'Sumber Dana'
+					},{
+						fieldName: 'Keterangan',
+						label: 'Kecamatan'
+					}]
+				},{
+					type: "media",
+					mediaInfos: [{
+						//caption: '{FOTO1}',
+						type: 'image',
+						value: {
+							sourceURL: imgUrl + '/RTLH/{FOTO1}',
+							linkURL: imgUrl + '/RTLH/{FOTO1}'
+						}
+					},{
+						type: 'image',
+						value: {
+							sourceURL: imgUrl + '/RTLH/{FOTO2}',
+							linkURL: imgUrl + '/RTLH/{FOTO2}'
+						}
+					},{
+						type: 'image',
+						value: {
+							sourceURL: imgUrl + '/RTLH/{FOTO3}',
+							linkURL: imgUrl + '/RTLH/{FOTO3}'
+						}
+					}]
+				}]
+			}
+		});
+
+		var lp2b = new WFSLayer({
+			url,
+			name: "geociamis:lp2b",
+			title: "LP2B",
+			visible: false,
+			renderer: renKP2B
+		});
+
+		var pel_pdam = new WFSLayer({url,
+			name: "geociamis:pelanggan_pdam",
+			title: "Pelanggan PDAM",
+			visible: false,
+			renderer: ren_PDAM
+		});
+
+		var pipa_pdam = new WFSLayer({url,
+			name: "geociamis:pipa_distribusi_pdam",
+			title: "Pipa Distribusi PDAM",
+			visible: false,
+			renderer: ren_Pipa
+		});
+
+		var jln_kab = new WFSLayer({url,
+			name: "geociamis:jalan_kabupaten",
+			title: "Jalan Kabupaten",
+			renderer: ren_kab			
+		}); 
+
+		var jln_prov = new WFSLayer({url,
+			name: "geociamis:jalan_provinsi",
+			title: "Jalan Provinsi",
+			renderer: ren_prov		
+		}); 
+
+		var jln_nas = new WFSLayer({url,
+			name: "geociamis:jalan_nasional",
+			title: "Jalan Nasional",
+			renderer: ren_nas		
+		}); 
+
+		var jalan = new GroupLayer({
+			title: "Jaringan Jalan",
+			visible: false,
+			layers: [jln_nas, jln_prov, jln_kab]
+		});
+
+		var area_pdam = new WFSLayer({url,
+			name: "geociamis:wilayah_pelayanan_PDAM",
+			title: "Wilayah Pelayanan PDAM",
+			visible: false,
+			renderer: renA_PDAM
+		});
+
+		var bts_kel = new WFSLayer({url,
+			name: "geociamis:batas_desa",
+			title: "Batas Desa",
+			outFields: "*",
+			visible: false,
+			renderer: renKel,
+			labelingInfo: lbl_kel
+		});
+		
+		var bts_kec = new WFSLayer({url,
+			name: "geociamis:batas_kecamatan",
+			title: "Batas Kecamatan",
+			outFields: ["*"],
+			visible: true,
+			renderer: renKec,
+			popupEnabled: true,
+			labelingInfo: [trailheadsLabels]
 		});
 	  
 		var map = new Map({
-			basemap: "topo",
-			layers: [bts_kec, bts_kel, area_pdam, jalan, rel_ka, pipa_pdam, pel_pdam, rutilahu, rumah]
+			basemap: "satellite",
+			//layers: [bts_kec, bts_kel, area_pdam, jalan, rel_ka, pipa_pdam, pel_pdam, rutilahu, rumah]
+			layers: [bts_kec, bts_kel, area_pdam, jalan, pipa_pdam, pel_pdam, lp2b, rutilahu, rumah, dankir, nanggela]
 		});
 	        
 		var mapView = new MapView({
 			container: "mapViewDiv",
 			map: map,
-			center: [108.4619775, -7.2693733],
+			center: [108.3819775, -7.2593733],
 			zoom: 12,
 			padding: {
 			  top: 50,
@@ -405,7 +1104,69 @@ require([
 			showLabels: true,
 			ui: {components: []}
 		});
-				
+
+		function viewFasumFasos() {
+			var id = view.popup.selectedFeature.attributes.No_;
+
+			var params = "no="+id;
+			var result, s = '<table class=table table-striped>';
+
+			var xhr = new XMLHttpRequest();
+			xhr.open("POST", "../admin/production/get_fasumfasos.php", true);
+			xhr.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
+			xhr.setRequestHeader("Content-length", params.length);
+			
+			xhr.onload = function () {			
+				result = JSON.parse(xhr.responseText);
+				if (result.rows === 1) {
+					var rp = parseFloat(result.data[0].nilai_kontrak);
+					rp = rp || 0;
+					var kontraktor = result.data[0].penyedia_jasa;
+					kontraktor = kontraktor || '-';
+					var rea = parseFloat(result.data[0].realisasi_kinerja_fisik);
+					var ren = parseFloat(result.data[0].realisasi_keuangan);
+					var url = result.data[0].report_url;
+					
+					s = s + '<tr><td width=135px>Nama Kegiatan</td><td>:</td><td>' + result.data[0].nama_kegiatan + '</td></tr>';
+					s = s + '<tr><td>Nama Paket</td><td>:</td><td>' + result.data[0].nama_paket + '</td></tr>';
+					s = s + '<tr><td>Nilai Kontrak</td><td>:</td><td>' + (rp).toFixed(2).replace(/\d(?=(\d{3})+\.)/g, '$&,') + '</td></tr>';
+					s = s + '<tr><td>Penyedia Jasa</td><td>:</td><td>' + kontraktor + '</td></tr>';
+					s = s + '<tr><td>Realisasi Keuangan</td><td>:</td><td>' + (ren).toFixed(2) + '</td></tr>';
+					s = s + '<tr><td>Realisasi Kinerja Fisik</td><td>:</td><td>' + (rea).toFixed(2) + ' % </td></tr>';
+					s = s + '<tr><td>URL Report</td><td>:</td><td><a href=' + url + ' target=blank>' + url + '</a></td></tr>';
+				} else {
+					s = s + '<tr><td>Tidak ada detail data !</td></tr>';
+				}
+				s = s + '</table>';
+				mapView.popup.content = s;
+			};
+			xhr.send(params);
+		}
+
+		/*reactiveUtils.on(
+		  () => view.popup,
+		  "trigger-action",
+		  (event) => {  // Execute the measureThis() function if the measure-this action is clicked
+			if (event.action.id === "edit-this") {
+			  viewFasumFasos();
+			} 
+		});*/
+		mapView.popup.on("trigger-action", function(event) {
+			if (event.action.id === "measure-this") {
+				viewFasumFasos();				
+			}
+		});
+
+		mapView.on("pointer-move", function(evt) {
+			var x, y;
+			var point = mapView.toMap(evt);
+			var mp = webMercatorUtils.webMercatorToGeographic(point);
+            x = mp.x.toFixed(7);
+            y = mp.y.toFixed(7);
+
+			document.getElementById('lblKoordinat').innerHTML = x + ', ' + y + '&nbsp;&nbsp;';
+        });
+
 		var searchWidget = new Search({
 			container: "searchWidgetDiv",
 			view: mapView
@@ -429,7 +1190,7 @@ require([
       
 		var basemapToggle = new BasemapToggle({
 			view: mapView,
-			secondBasemap: "satellite"
+			nextBasemap: "topo"
 		});
 		mapView.ui.add(basemapToggle, "bottom-right");          
       
@@ -438,7 +1199,7 @@ require([
 			style: "ruler",
 			unit: 'metric'
 		});
-		mapView.ui.add(scaleBar, "bottom-left");
+		mapView.ui.add(scaleBar, "bottom-right");
 
 		var attribution = new Attribution({
 			view: mapView,
@@ -447,9 +1208,10 @@ require([
 		mapView.ui.add(attribution, "manual");
 
 		var legendWidget = new Legend({
-			container: "legendDiv",
+			//container: "legendDiv",
 			view: mapView
 		});
+		mapView.ui.add(legendWidget, "bottom-left");
 	  
 		var editorWidget = new Editor({
 			container: "editorDiv",
@@ -468,7 +1230,7 @@ require([
 				};
 			}
 		
-			if (item.title === "Batas Kecamatan" || item.title === "Batas Desa" || item.title === "Wilayah Pelayanan PDAM" || item.title === "Jaringan Jalan" || item.title === "Rel KA" || item.title === "Pipa Distribusi PDAM" || item.title === "Pelanggan PDAM" || item.title === "RTLH" || item.title === "Sebaran Perumahan") {
+			if (item.title === "Batas Kecamatan" || item.title === "Batas Desa" || item.title === "Wilayah Pelayanan PDAM" || item.title === "Jalan Nasional" || item.title === "Jalan Provinsi" || item.title === "Jalan Kabupaten" || item.title === "LP2B" || item.title === "Pipa Distribusi PDAM" || item.title === "Pelanggan PDAM" || item.title === "RTLH" || item.title === "Sebaran Perumahan" || item.title === "Lahan" || item.title === "Saluran Irigasi" || item.title === "Saluran Irigasi Detail" || item.title === "Bangunan Pelengkap") {
 				item.actionsSections = [
 				[
 					{
@@ -545,10 +1307,14 @@ require([
 					visibleLayer = bts_desa;
 				else if (event.item.title === "Wilayah Pelayanan PDAM")
 					visibleLayer = area_pdam;
-				else if (event.item.title === "Jaringan Jalan")
-					visibleLayer = jalan;
-					else if (event.item.title === "Rel KA")
-					visibleLayer = rel_ka;
+				else if (event.item.title === "Jalan Nasional")
+					visibleLayer = jln_nas;
+				else if (event.item.title === "Jalan Provinsi")
+					visibleLayer = jln_prov;
+				else if (event.item.title === "Jalan Kabupaten")
+					visibleLayer = jln_kab;
+				else if (event.item.title === "LP2B")
+					visibleLayer = kp2b;
 				else if (event.item.title === "Pipa Distribusi PDAM")
 					visibleLayer = pipa_pdam;
 				else if (event.item.title === "Pelanggan PDAM")
@@ -557,6 +1323,30 @@ require([
 					visibleLayer = rutilahu;
 				else if (event.item.title === "Sebaran Perumahan")
 					visibleLayer = rumah;
+				else if (event.item.title === "Lahan") {
+					if (event.item.parentNode.title === "D.I Nanggela")
+						visibleLayer = lahan_nanggela;
+					else
+						visibleLayer = lahan_dankir;
+				}
+				else if (event.item.title === "Saluran Irigasi") {
+					if (event.item.parentNode.title === "D.I Nanggela")
+						visibleLayer = sal_nanggela;
+					else
+						visibleLayer = sal_dankir;
+				}
+				else if (event.item.title === "Saluran Irigasi Detail") {
+					if (event.item.parentNode.title === "D.I Nanggela")
+						visibleLayer = irigasi_nanggela;
+					else
+						visibleLayer = irigasi_dankir;
+				}
+				else if (event.item.title === "Bangunan Pelengkap") {
+					if (event.item.parentNode.title === "D.I Nanggela")
+						visibleLayer = bgn_nanggela;
+					else
+						visibleLayer = bgn_dankir;
+				}
 			  
 				var id = event.action.id;
 	  
